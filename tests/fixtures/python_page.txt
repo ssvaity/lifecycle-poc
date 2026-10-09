@@ -1,0 +1,5 @@
+Status of Python versions
+
+Python 3.8 reached end of life on 2024-10-07 and no longer receives security updates.
+Python 3.9 will reach end of life in October 2025.
+The final bugfix release of 3.8 marked the end of support for regular maintenance on May 3, 2021.

@@ -1,0 +1,12 @@
+Windows Server 2016 - Microsoft Lifecycle
+
+Windows Server 2016 follows the Fixed Lifecycle Policy.
+
+| Listing | Start Date | Mainstream End Date | Extended End Date |
+| Windows Server 2016 Datacenter | Oct 15, 2016 | Jan 11, 2022 | Jan 12, 2027 |
+| Windows Server 2016 Standard | Oct 15, 2016 | Jan 11, 2022 | Jan 12, 2027 |
+
+Releases
+
+| Version | Start Date | End Date |
+| Original Release | Oct 15, 2016 | Oct 9, 2018 |

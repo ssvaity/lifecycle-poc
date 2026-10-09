@@ -1,0 +1,12 @@
+[
+  { "query": "Python 3.8", "ref": { "product": "python", "cycle": "3.8" } },
+  { "query": "Node.js 18", "ref": { "product": "nodejs", "cycle": "18" } },
+  { "query": "Ubuntu 20.04 LTS", "ref": { "product": "ubuntu", "cycle": "20.04" } },
+  { "query": "Windows Server 2016", "ref": { "product": "windows-server", "cycle": "2016" } },
+  { "query": "CentOS 7", "ref": { "product": "centos", "cycle": "7" } },
+  { "query": "PHP 8.1", "ref": { "product": "php", "cycle": "8.1" } },
+  { "query": "PostgreSQL 12", "ref": { "product": "postgresql", "cycle": "12" } },
+  { "query": "Django 3.2", "ref": { "product": "django", "cycle": "3.2" } },
+  { "query": "Debian 10 Buster", "ref": { "product": "debian", "cycle": "10" } },
+  { "query": "Red Hat Enterprise Linux 7", "ref": { "product": "rhel", "cycle": "7" } }
+]
