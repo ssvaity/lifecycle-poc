@@ -18,6 +18,14 @@ query ─► SearchAPI.io (Google) ─► best official result ─► fetch page
 - **Verified** — both providers found the date and agree. Disagreements are flagged
   and left blank instead of guessed.
 
+**Saving credits** — endoflife.date's free API is checked first; when it has the
+release, that answer is returned and no paid search runs (`--no-eol` to skip it).
+Paid search runs SearchAPI first and calls Exa only if SearchAPI finds no dates on an
+official or trusted page (`--cross-check` runs both, so the answer can be verified).
+Results are saved in `.cache/` for 7 days, so repeat lookups are free (`--no-cache`
+to refresh). Each result lists what it cost: SearchAPI credits, Exa dollars, and free
+page fetches.
+
 Definitions: *end of support* = end of mainstream / active / standard support;
 *end of life* = end of all support, including extended / security support.
 
@@ -36,6 +44,10 @@ cp .env.example .env      # then add your keys
 lifecycle lookup "Windows Server 2016"            # table with sources and quotes
 lifecycle lookup "Python 3.8" --json              # full JSON
 lifecycle lookup "Ubuntu 20.04" --provider exa    # one provider only
+lifecycle lookup "Python 3.8" --pages 2           # read at most 2 result pages per provider
+lifecycle lookup "Python 3.8" --no-eol --no-cache # skip endoflife.date and the saved result
+lifecycle lookup "FortiOS 7.0" --cross-check      # run both providers so they verify each other
+lifecycle clear-cache                             # forget saved results
 
 streamlit run app.py                              # web page at http://localhost:8501
 ```

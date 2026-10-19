@@ -19,7 +19,9 @@ from .models import SearchHit, Source
 from .versions import has_version, version_tokens
 
 OFFICIAL_THRESHOLD = 4
-MAX_CANDIDATES = 5
+#: How many result pages a lookup may read (the web page's slider).
+PAGE_CHOICES = (2, 4, 6, 8)
+MAX_CANDIDATES = 6
 
 # Reliable third parties, tried after the vendor's own pages: (host, path prefix).
 TRUSTED_SOURCES = (

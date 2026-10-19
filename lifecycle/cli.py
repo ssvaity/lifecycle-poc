@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from rich.console import Console
 from rich.table import Table
 
+from .official import MAX_CANDIDATES
+
 load_dotenv()
 
 app = typer.Typer(add_completion=False, help="Look up end-of-life / end-of-support dates with citations.")
@@ -35,18 +37,28 @@ def lookup(
     query: str = typer.Argument(..., help='Product and version, e.g. "Windows Server 2016"'),
     provider: Which = typer.Option(Which.both, help="Which search provider(s) to use"),
     as_json: bool = typer.Option(False, "--json", help="Print the full JSON result"),
+    pages: int = typer.Option(MAX_CANDIDATES, min=1, max=10, help="Most result pages each provider may read"),
+    eol: bool = typer.Option(True, help="Check endoflife.date first (free); skip paid search if it has the release"),
+    cache: bool = typer.Option(True, help="Use a saved result if one is under a week old"),
+    cross_check: bool = typer.Option(False, help="Run every provider so they verify each other (about 2x the cost)"),
 ):
     """Find EOL / EOS dates for one product."""
     from .lookup import lookup as run
 
     with console.status(f"Looking up {query}…"):
-        res = run(query, _providers(provider))
+        res = run(query, _providers(provider), pages, free_first=eol, use_cache=cache, cross_check=cross_check)
 
     if as_json:
         print(json.dumps(res.to_dict(), indent=2))
         return
 
-    console.print(f"\n[bold]{res.query}[/]  " + ("[green]verified[/]" if res.verified else "[yellow]not verified[/]"))
+    status = ("[cyan]from endoflife.date[/]" if list(res.providers) == ["endoflife.date"]
+              else "[green]verified[/]" if res.verified
+              else f"[cyan]official source; {', '.join(res.skipped)} skipped (--cross-check to verify)[/]" if res.skipped
+              else "[yellow]not verified[/]")
+    if res.cached:
+        status += f"  [dim](saved result from {res.retrieved_at}; --no-cache to refresh)[/]"
+    console.print(f"\n[bold]{res.query}[/]  {status}")
     t = Table(show_header=True, header_style="bold")
     t.add_column("")
     t.add_column("Final")
@@ -72,6 +84,30 @@ def lookup(
             console.print(f'  {f}: [italic]"{q[:200]}"[/]')
         for n in p.notes:
             console.print(f"  [dim]note: {n}[/]")
+
+    usage = [(name, u) for name, p in res.providers.items() for u in p.usage]
+    if usage:
+        t = Table(title="Usage", header_style="bold")
+        for col in ("Provider", "Step", "Units", "Cost"):
+            t.add_column(col)
+        for name, u in usage:
+            t.add_row(name, u.step, f"{u.units} {u.unit}{'s' if u.units != 1 else ''}", u.cost_label())
+        console.print()
+        console.print(t)
+    if "searchapi" in res.providers:
+        from .providers.searchapi import remaining_credits
+
+        left = remaining_credits()
+        if left is not None:
+            console.print(f"SearchAPI credits left: [bold]{left}[/]")
+
+
+@app.command("clear-cache")
+def clear_cache():
+    """Delete all saved lookups and endoflife.date data."""
+    from . import cache
+
+    console.print(f"Removed {cache.clear()} saved entries.")
 
 
 @app.command()

@@ -4,7 +4,7 @@ import os
 
 import httpx
 
-from ..models import SearchHit
+from ..models import SearchHit, UsageItem
 from ..versions import release_line
 
 TIMEOUT = httpx.Timeout(30.0, connect=10.0)
@@ -30,6 +30,10 @@ class Provider:
         if not self.api_key:
             raise ProviderError(f"{self.env_key} is not set (add it to .env)")
         self.client = client or httpx.Client(timeout=TIMEOUT)
+        #: Results to ask for, for providers that let us choose.
+        self.num_results = 8
+        #: What this provider's calls cost, filled in by search().
+        self.usage: list[UsageItem] = []
 
     def search(self, query: str) -> list[SearchHit]:
         raise NotImplementedError

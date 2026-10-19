@@ -42,7 +42,9 @@ def run(limit: int | None = None, on_progress=None) -> dict:
             ref, ref_error = {f: None for f in FIELDS}, str(e)
         else:
             ref_error = None
-        res = lookup(p["query"])
+        # Scored against endoflife.date, so never answer from it — and never from cache.
+        # Every provider runs, so each one gets scored.
+        res = lookup(p["query"], free_first=False, use_cache=False, cross_check=True)
         scores = {}
         for name, pr in res.providers.items():
             scores[name] = {

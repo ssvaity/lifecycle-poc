@@ -44,6 +44,24 @@ class Extraction:
 
 
 @dataclass
+class UsageItem:
+    """One billable (or free) step of a lookup, e.g. a search request or page fetches."""
+
+    step: str
+    units: int
+    unit: str                      # "credit", "request", "page"
+    cost_usd: float | None = None  # None: billed in credits, or the provider didn't say
+
+    def cost_label(self) -> str:
+        """"1 credit", "$0.0070", "free" — for tables."""
+        if self.unit == "credit":
+            return f"{self.units} credit{'s' if self.units != 1 else ''}"
+        if self.cost_usd is None:
+            return "—"
+        return "free" if self.cost_usd == 0 else f"${self.cost_usd:.4f}"
+
+
+@dataclass
 class ProviderResult:
     provider: str
     end_of_life: str | None = None
@@ -53,6 +71,7 @@ class ProviderResult:
     error: str | None = None
     elapsed_s: float = 0.0
     notes: list[str] = field(default_factory=list)
+    usage: list[UsageItem] = field(default_factory=list)
 
 
 @dataclass
@@ -64,6 +83,21 @@ class LookupResult:
     agreement: dict[str, bool | None]
     providers: dict[str, ProviderResult]
     retrieved_at: str
+    #: Served from the on-disk cache: this lookup made no API calls.
+    cached: bool = False
+    #: Providers not called because an earlier one already gave an official answer.
+    skipped: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return asdict(self)
+
+    @classmethod
+    def from_dict(cls, d: dict) -> LookupResult:
+        providers = {
+            name: ProviderResult(**(p | {
+                "source": Source(**p["source"]) if p.get("source") else None,
+                "usage": [UsageItem(**u) for u in p.get("usage", [])],
+            }))
+            for name, p in d["providers"].items()
+        }
+        return cls(**(d | {"providers": providers}))
